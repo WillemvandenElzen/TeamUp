@@ -62,7 +62,7 @@ fun `Event-view`(onSettingsClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val sectionTitle = if (pagerState.currentPage == 0) {
-                    "Jouw Evenementen:"
+                    "Beschikbare Evenementen:"
                 } else {
                     "Beschikbare evenementen:"
                 }
