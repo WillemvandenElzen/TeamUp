@@ -1,7 +1,9 @@
 package fontys.ict.teamup
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
@@ -22,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
@@ -35,7 +40,7 @@ fun `Event-view`(onSettingsClick: () -> Unit) {
             .fillMaxSize()
             .padding(
                 top = topInsetPadding + 8.dp,
-                start = 8.dp,
+                start = 16.dp,
                 end = 16.dp,
                 bottom = 16.dp
             ),
@@ -62,9 +67,9 @@ fun `Event-view`(onSettingsClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val sectionTitle = if (pagerState.currentPage == 0) {
-                    "Beschikbare Evenementen:"
+                    "Beschikbare Evenementen (Ingeschreven):"
                 } else {
-                    "Beschikbare evenementen:"
+                    "Beschikbare evenementen (Toekomst):"
                 }
 
                 Text(
@@ -83,6 +88,35 @@ fun `Event-view`(onSettingsClick: () -> Unit) {
                 tint = Color.Black
             )
         }
-        EventPager(pagerState = pagerState)
+        EventPager(
+            pagerState = pagerState,
+            modifier = Modifier.weight(1f)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(2) { index ->
+                    val isSelected = pagerState.currentPage == index
+                    val dotWidth = if (isSelected) 24.dp else 8.dp
+                    val dotColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray
+
+                    Box(
+                        modifier = Modifier
+                            .height(8.dp)
+                            .width(dotWidth)
+                            .clip(CircleShape)
+                            .background(dotColor)
+                    )
+                }
+            }
+        }
     }
 }
