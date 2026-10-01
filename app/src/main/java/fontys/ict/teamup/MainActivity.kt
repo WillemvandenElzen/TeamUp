@@ -1,113 +1,169 @@
+@file:Suppress("SpellCheckingInspection")
+
 package fontys.ict.teamup
 
-import android.media.Image
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Red
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontVariation.weight
 import androidx.compose.ui.unit.dp
-import fontys.ict.teamup.ui.theme.Purple40
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import fontys.ict.teamup.ui.theme.TeamUpTheme
-import org.intellij.lang.annotations.JdkConstants
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+
         setContent {
             TeamUpTheme {
-                Table(name = "Android")
+                TeamUpApp()
             }
         }
     }
 }
 
 @Composable
-fun Table(name: String, modifier: Modifier = Modifier) {
-    var selectedPerson by remember { mutableStateOf<String?>(null) }
+fun TeamUpApp() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "events") {
+        composable("events") {
+            `Event-view`(
+                onSettingsClick = {
+                    navController.navigate("settings")
+                }
+            )
+        }
+
+        composable("settings") {
+            SettingsView(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun `Event-view`(onSettingsClick: () -> Unit) {
+    val topInsetPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
+
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = topInsetPadding + 8.dp,
+                start = 8.dp,
+                end = 16.dp,
+                bottom = 16.dp
+            ),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(top = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Gabriel",
-                modifier = Modifier
-                    .background(color = if (selectedPerson == "Gabriel") Color.Red else Color.LightGray)
-                    .weight(1f)
-                    .clickable {
-                        if (selectedPerson == "Gabriel") {
-                            selectedPerson = null
-                        } else {
-                            selectedPerson = "Gabriel"
-                        }
-                    })
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Willem welkom",
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-            Text(text = "Remco",
+                Text(
+                    text = "Filters: [50km] [Basketbal]",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Geplande evenementen:",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = "Settings",
                 modifier = Modifier
-                    .background(color = if (selectedPerson == "Remco") Color.Yellow else Color.Blue)
-                    .weight(1f)
+                    .padding(8.dp)
                     .clickable {
-                        if (selectedPerson == "Remco") {
-                            selectedPerson = null
-                        } else {
-                            selectedPerson = "Remco"
-                        }
+                        onSettingsClick()
                     }
-                    )
-
-            Text(text = "Jason-Dean",
-                modifier = Modifier
-                    .background(color = Color.Blue)
-                    .weight(1f))
+                    .size(32.dp),
+                tint = Color.Black
+            )
         }
-        Row(
-            modifier = Modifier.padding(top = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            Text(text = "Npc",
-                modifier = Modifier
-                    .background(color = Color.Green)
-                    .weight(1f))
+            val screenHeight = maxHeight
+            val dynamicSpacing = (screenHeight * 0.015f).coerceIn(8.dp, 20.dp)
 
-            Text(text = "Willem",
+            Column(
                 modifier = Modifier
-                    .background(color = Color.Cyan)
-                    .weight(1f))
+                    .fillMaxWidth()
+                    .heightIn(min = screenHeight)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(
+                    dynamicSpacing,
+                    Alignment.CenterVertically
+                ),
+                horizontalAlignment = Alignment.Start
+            ) {
+                val eventText =
+                    "Er staat een basketbal evenement gepland op Maandag 24 Sepetember om 9:00 bij basketbalveld 'T Slotje"
 
-            Text(text = "Falco",
-                modifier = Modifier
-                    .background(color = Color.Gray)
-                    .weight(1f))
+                repeat(8) {
+                    Card(modifier = Modifier.fillMaxWidth(0.60f)) {
+                        Text(text = eventText, modifier = Modifier.padding(12.dp))
+                    }
+                }
+            }
         }
     }
 }
