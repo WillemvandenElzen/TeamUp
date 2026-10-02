@@ -54,12 +54,23 @@ fun TeamUpApp() {
             `Event-view`(
                 onSettingsClick = {
                     navController.navigate("settings")
+                },
+                onEventCreateClick = {
+                    navController.navigate("eventcreator")
                 }
             )
         }
 
         composable("settings") {
             SettingsView(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable ("eventcreator") {
+            EventCreateView(
                 onBackClick = {
                     navController.popBackStack()
                 }

@@ -32,9 +32,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun `Event-view`(onSettingsClick: () -> Unit) {
+fun `Event-view`(
+    onSettingsClick: () -> Unit,
+    onEventCreateClick: () -> Unit
+) {
     val topInsetPadding = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     val pagerState = rememberPagerState(pageCount = { 2 })
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -92,17 +96,26 @@ fun `Event-view`(onSettingsClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
+
             EventPager(
                 pagerState = pagerState,
                 modifier = Modifier.weight(1f)
             )
-            Row(
+
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                Text(
+                    text = "Maak een evenement aan!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable { onEventCreateClick() }
+                )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically

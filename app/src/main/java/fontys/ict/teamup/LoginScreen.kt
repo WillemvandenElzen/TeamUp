@@ -56,7 +56,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (isSignUp) "Create Account" else "Welcome Back",
+                text = if (isSignUp) "Create Account" else "Welcome to TeamUp!",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
