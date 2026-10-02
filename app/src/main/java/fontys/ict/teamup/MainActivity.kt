@@ -37,7 +37,19 @@ class MainActivity : ComponentActivity() {
 fun TeamUpApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "events") {
+    NavHost(navController = navController, startDestination = "login") {
+
+        composable("login") {
+            // Replace this with your actual LoginScreen composable function
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("events") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable("events") {
             `Event-view`(
                 onSettingsClick = {

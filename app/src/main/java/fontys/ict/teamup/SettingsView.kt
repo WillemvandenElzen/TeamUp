@@ -28,7 +28,6 @@ fun SettingsView(onBackClick: () -> Unit) {
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
-        // Example back button or action
         Text(
             text = "Go Back",
             modifier = Modifier.clickable { onBackClick() },

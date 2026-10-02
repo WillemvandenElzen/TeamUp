@@ -28,7 +28,7 @@ fun EventPager(pagerState: PagerState, modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize()
         ) {
             val screenHeight = maxHeight
-            val dynamicSpacing = (screenHeight * 0.015f).coerceIn(8.dp, 20.dp)
+            val dynamicSpacing = (screenHeight * 0.010f).coerceIn(6.dp, 20.dp)
             val horizontalAlignment = if (page == 0) Alignment.Start else Alignment.End
 
             Column(
