@@ -1,5 +1,6 @@
 package fontys.ict.teamup
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,37 +13,42 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
-    var isSignUp by remember { mutableStateOf(false) }
-    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var verificationPending by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var isTestingInternet by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -56,7 +62,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (isSignUp) "Create Account" else "Welcome to TeamUp!",
+                text = "Welcome to TeamUp!",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -64,114 +70,107 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (isSignUp) "Sign up to get started" else "Log in to continue",
+                text = "Log in to continue",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (verificationPending) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Verification Email Sent!",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Please check your inbox at $email and verify your email address before logging in.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                singleLine = true,
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
                     }
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-                TextButton(onClick = { verificationPending = false }) {
-                    Text("Back to Log In")
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    if (isSignUp) {
-                        OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            label = { Text("Username") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+            Button(
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                        return@Button
                     }
 
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password") },
-                        singleLine = true,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        trailingIcon = {
-                            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                            val description = if (passwordVisible) "Hide password" else "Show password"
-
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(imageVector = image, contentDescription = description)
+                    isLoading = true
+                    coroutineScope.launch {
+                        try {
+                            supabase.auth.signInWith(Email) {
+                                this.email = email
+                                this.password = password
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Primary Action Button
-                Button(
-                    onClick = {
-                        if (isSignUp) {
-                            // TODO: Later integrate Supabase Sign Up
-                            verificationPending = true
-                        } else {
-                            // TODO: Later integrate Supabase Log In
-                            // For now, invoking the success callback to test navigation to Event-view:
+                            isLoading = false
                             onLoginSuccess()
+                        } catch (e: Exception) {
+                            isLoading = false
+                            android.util.Log.e("LoginScreen", "Login failed", e) // <-- This will make it show up in Logcat
+                            Toast.makeText(context, "Login failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(text = if (isSignUp) "Sign Up" else "Log In")
-                }
+                    }
+                },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(text = if (isLoading) "Logging in..." else "Log In")
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                // Toggle between Sign In and Sign Up modes
-                TextButton(onClick = {
-                    isSignUp = !isSignUp
-                    verificationPending = false
-                }) {
-                    Text(
-                        text = if (isSignUp) "Already have an account? Log In"
-                        else "Don't have an account? Sign Up"
-                    )
-                }
+            OutlinedButton(
+                onClick = {
+                    isTestingInternet = true
+                    coroutineScope.launch {
+                        try {
+                            val report = runInternetDiagnostics(context)
+                            android.util.Log.i("InternetCheck", report)
+                            val toast = when {
+                                "FAILED" in report -> report.lines().first { "FAILED" in it }
+                                report.contains("validated=false") ->
+                                    "Online but not validated (captive portal?). See Logcat: InternetCheck"
+                                else -> "Internet OK. Details in Logcat tag InternetCheck"
+                            }
+                            Toast.makeText(context, toast, Toast.LENGTH_LONG).show()
+                        } catch (e: Exception) {
+                            android.util.Log.e("InternetCheck", "Diagnostics failed", e)
+                            Toast.makeText(
+                                context,
+                                "Test failed: ${e.localizedMessage}",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        } finally {
+                            isTestingInternet = false
+                        }
+                    }
+                },
+                enabled = !isLoading && !isTestingInternet,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = if (isTestingInternet) "Testing…" else "Test internet")
             }
         }
     }

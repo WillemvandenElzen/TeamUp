@@ -14,6 +14,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fontys.ict.teamup.ui.theme.TeamUpTheme
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
+
+val supabase = createSupabaseClient(
+    supabaseUrl = "http://10.61.0.42:8000",
+    supabaseKey = "sb_publishable_dgy9B6ZLa4QctV0fuesptz_XSnHBS6E"
+) {
+    install(Postgrest)
+    install(Auth)
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,9 +49,7 @@ fun TeamUpApp() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "login") {
-
         composable("login") {
-            // Replace this with your actual LoginScreen composable function
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate("events") {
@@ -69,7 +78,7 @@ fun TeamUpApp() {
             )
         }
 
-        composable ("eventcreator") {
+        composable("eventcreator") {
             EventCreateView(
                 onBackClick = {
                     navController.popBackStack()
